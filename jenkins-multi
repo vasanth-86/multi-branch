@@ -1,0 +1,80 @@
+pipeline {
+    agent any
+
+    environment {
+        // Set the environment to 'dev' (could also be parameterized or set dynamically)
+        ENVIRONMENT = 'dev'
+    }
+
+    stages {
+        stage('Preparation') {
+            steps {
+                script {
+                    echo "Preparing for the ${ENVIRONMENT} environment"
+                    // You can also set additional environment variables or perform checks here
+                }
+            }
+        }
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Dev Build') {
+            when {
+                expression { return ENVIRONMENT == 'dev' }
+            }
+            steps {
+                script {
+                    echo "Running build for the DEV environment"
+                    // Call a Groovy script to handle the build tasks
+                    def groovyScript = load 'devBuild.groovy'
+                    groovyScript.build()  // Call the method to handle dev build
+                }
+            }
+        }
+
+        stage('Dev Test') {
+            when {
+                expression { return ENVIRONMENT == 'dev' }
+            }
+            steps {
+                script {
+                    echo "Running tests in the DEV environment"
+                    // Call a Groovy script to handle test tasks
+                    def groovyScript = load 'devTest.groovy'
+                    groovyScript.runTests()  // Call the method to run tests in dev
+                }
+            }
+        }
+
+        stage('Deploy to Dev') {
+            when {
+                expression { return ENVIRONMENT == 'dev' }
+            }
+            steps {
+                script {
+                    echo "Deploying to the DEV environment"
+                    // Call a Groovy script to handle deployment
+                    def groovyScript = load 'devDeploy.groovy'
+                    groovyScript.deploy()  // Call the deploy method to handle dev deployment
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "Cleaning up after the build"
+            // Perform any cleanup tasks here, such as archiving artifacts
+        }
+        success {
+            echo "Build completed successfully for the ${ENVIRONMENT} environment"
+        }
+        failure {
+            echo "Build failed for the ${ENVIRONMENT} environment"
+        }
+    }
+}
