@@ -1,17 +1,11 @@
 pipeline {
     agent any
 
-    environment {
-        // Set the environment to 'test' (can be overridden dynamically if needed)
-        ENVIRONMENT = 'test'
-    }
-
     stages {
         stage('Preparation') {
             steps {
                 script {
-                    echo "Preparing for the ${ENVIRONMENT} environment"
-                    // You can also set additional environment variables or perform checks here
+                    echo "Preparing for the test environment"
                 }
             }
         }
@@ -22,44 +16,39 @@ pipeline {
             }
         }
 
-        stage('Test Build') {
-            when {
-                expression { return ENVIRONMENT == 'test' }
+        stage('List Files') {
+            steps {
+                sh 'ls -R'  // List files in the workspace to check the directory structure
             }
+        }
+
+        stage('Test Build') {
             steps {
                 script {
                     echo "Running build for the TEST environment"
-                    // Call a Groovy script to handle the build tasks for the test environment
-                    def groovyScript = load 'testBuild.groovy'
-                    groovyScript.build()  // Call the method to handle build for test
+                    // Ensure the correct file path
+                    def groovyScript = load 'testBuild.groovy'  // Correct path for your file
+                    groovyScript.build()  // Assuming 'build' is a method in your 'testBuild.groovy' file
                 }
             }
         }
 
         stage('Test Execution') {
-            when {
-                expression { return ENVIRONMENT == 'test' }
-            }
             steps {
                 script {
-                    echo "Running tests in the TEST environment"
-                    // Call a Groovy script to handle test tasks
-                    def groovyScript = load 'testExecuteTests.groovy'
-                    groovyScript.runTests()  // Call the method to run tests in test
+                    echo "Running tests for the TEST environment"
+                    def groovyScript = load 'testTest.groovy'  // Ensure the test script exists and is loaded properly
+                    groovyScript.runTests()
                 }
             }
         }
 
         stage('Deploy to Test') {
-            when {
-                expression { return ENVIRONMENT == 'test' }
-            }
             steps {
                 script {
                     echo "Deploying to the TEST environment"
-                    // Call a Groovy script to handle deployment
-                    def groovyScript = load 'testDeploy.groovy'
-                    groovyScript.deploy()  // Call the deploy method to handle test deployment
+                    def groovyScript = load 'testDeploy.groovy'  // Ensure the deploy script exists and is loaded properly
+                    groovyScript.deploy()
                 }
             }
         }
@@ -68,13 +57,12 @@ pipeline {
     post {
         always {
             echo "Cleaning up after the build"
-            // Perform any cleanup tasks here, such as archiving artifacts
         }
         success {
-            echo "Build completed successfully for the ${ENVIRONMENT} environment"
+            echo "Build completed successfully for the test environment"
         }
         failure {
-            echo "Build failed for the ${ENVIRONMENT} environment"
+            echo "Build failed for the test environment"
         }
     }
 }
