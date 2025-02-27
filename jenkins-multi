@@ -1,0 +1,80 @@
+pipeline {
+    agent any
+
+    environment {
+        // Set the environment to 'test' (can be overridden dynamically if needed)
+        ENVIRONMENT = 'test'
+    }
+
+    stages {
+        stage('Preparation') {
+            steps {
+                script {
+                    echo "Preparing for the ${ENVIRONMENT} environment"
+                    // You can also set additional environment variables or perform checks here
+                }
+            }
+        }
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Test Build') {
+            when {
+                expression { return ENVIRONMENT == 'test' }
+            }
+            steps {
+                script {
+                    echo "Running build for the TEST environment"
+                    // Call a Groovy script to handle the build tasks for the test environment
+                    def groovyScript = load 'testBuild.groovy'
+                    groovyScript.build()  // Call the method to handle build for test
+                }
+            }
+        }
+
+        stage('Test Execution') {
+            when {
+                expression { return ENVIRONMENT == 'test' }
+            }
+            steps {
+                script {
+                    echo "Running tests in the TEST environment"
+                    // Call a Groovy script to handle test tasks
+                    def groovyScript = load 'testExecuteTests.groovy'
+                    groovyScript.runTests()  // Call the method to run tests in test
+                }
+            }
+        }
+
+        stage('Deploy to Test') {
+            when {
+                expression { return ENVIRONMENT == 'test' }
+            }
+            steps {
+                script {
+                    echo "Deploying to the TEST environment"
+                    // Call a Groovy script to handle deployment
+                    def groovyScript = load 'testDeploy.groovy'
+                    groovyScript.deploy()  // Call the deploy method to handle test deployment
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "Cleaning up after the build"
+            // Perform any cleanup tasks here, such as archiving artifacts
+        }
+        success {
+            echo "Build completed successfully for the ${ENVIRONMENT} environment"
+        }
+        failure {
+            echo "Build failed for the ${ENVIRONMENT} environment"
+        }
+    }
+}
