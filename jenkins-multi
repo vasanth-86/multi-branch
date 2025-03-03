@@ -77,9 +77,3 @@ pipeline {
         }
     }
 }
-
-
-
-=======
-echo "vasanth"
->>>>>>> 64b70586945027d4ede546e2e93af4eec925dd06
