@@ -1,80 +1,81 @@
 pipeline {
-    agent any
+    agent any  // This means it can run on any available agent
 
     environment {
-        // Set the environment to 'test' (can be overridden dynamically if needed)
-        ENVIRONMENT = 'test'
+        // Define environment variables, such as test-specific ones
+        TEST_ENV = 'test'  // This is an example environment variable for your test environment
     }
 
     stages {
-        stage('Preparation') {
-            steps {
-                script {
-                    echo "Preparing for the ${ENVIRONMENT} environment"
-                    // You can also set additional environment variables or perform checks here
-                }
-            }
-        }
-
         stage('Checkout') {
             steps {
-                checkout scm
+                // Checkout the latest code from the repository
+                git 'https://github.com/your-username/your-repository.git'
             }
         }
 
-        stage('Test Build') {
-            when {
-                expression { return ENVIRONMENT == 'test' }
-            }
+        stage('Install Dependencies') {
             steps {
                 script {
-                    echo "Running build for the TEST environment"
-                    // Call a Groovy script to handle the build tasks for the test environment
-                    def groovyScript = load 'testBuild.groovy'
-                    groovyScript.build()  // Call the method to handle build for test
+                    // Install dependencies like npm, maven, etc.
+                    // For example, if you're using npm for a Node.js project:
+                    sh 'npm install'
                 }
             }
         }
 
-        stage('Test Execution') {
-            when {
-                expression { return ENVIRONMENT == 'test' }
-            }
+        stage('Run Tests') {
             steps {
                 script {
-                    echo "Running tests in the TEST environment"
-                    // Call a Groovy script to handle test tasks
-                    def groovyScript = load 'testExecuteTests.groovy'
-                    groovyScript.runTests()  // Call the method to run tests in test
+                    // Run your tests here
+                    // Example for a Node.js application using npm:
+                    sh 'npm test'
+
+                    // You can replace the above command with any test command (e.g., `pytest` for Python, `mvn test` for Java, etc.)
                 }
             }
         }
 
-        stage('Deploy to Test') {
-            when {
-                expression { return ENVIRONMENT == 'test' }
-            }
+        stage('Deploy to Test Environment') {
             steps {
                 script {
-                    echo "Deploying to the TEST environment"
-                    // Call a Groovy script to handle deployment
-                    def groovyScript = load 'testDeploy.groovy'
-                    groovyScript.deploy()  // Call the deploy method to handle test deployment
+                    // Deploy the application to your test environment
+                    // This is just a placeholder for the actual deployment process
+                    echo 'Deploying to test environment...'
+                    sh './deploy.sh test'  // You can replace this with a script or command to deploy your code
+                }
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                script {
+                    // Verify that the application was successfully deployed to the test environment
+                    // Example: Call an API or run a health check
+                    echo 'Verifying deployment...'
+                    sh './verify_deployment.sh'  // Replace this with your actual verification step
                 }
             }
         }
     }
 
     post {
-        always {
-            echo "Cleaning up after the build"
-            // Perform any cleanup tasks here, such as archiving artifacts
-        }
         success {
-            echo "Build completed successfully for the ${ENVIRONMENT} environment"
+            // Run on success
+            echo 'Tests passed and deployment verified in the test environment.'
         }
+
         failure {
-            echo "Build failed for the ${ENVIRONMENT} environment"
+            // Run on failure
+            echo 'Something went wrong. Please check the logs.'
+        }
+
+        always {
+            // Cleanup actions or notifications that should always run
+            echo 'Cleaning up after pipeline...'
         }
     }
 }
+
+
+
