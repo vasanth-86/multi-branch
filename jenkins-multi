@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 pipeline {
     agent any  // This means it can run on any available agent
 
@@ -79,3 +80,6 @@ pipeline {
 
 
 
+=======
+echo "vasanth"
+>>>>>>> 64b70586945027d4ede546e2e93af4eec925dd06
