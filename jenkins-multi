@@ -1,86 +1,20 @@
-pipeline {
-    agent any  // This means it can run on any available agent
-
-    environment {
-        // Define environment variables, such as test-specific ones
-        TEST_ENV = 'test'  // This is an example environment variable for your test environment
+pipeline{
+  agent none
+  stages{
+    stage('QA'){
+      agent{
+        label 'TestExecute'
+      }
+      steps{
+        testcompletetest credentialsId: 'tester',
+          executorType: 'TE',
+          launchType: 'lcRoutine',
+          project: 'TestProject1',
+          routine: 'Test1',
+          suite: 'ProjectSuite1\\ProjectSuite1.pjs',
+          unit: 'Unit1',
+          useTCService: true
+       }
     }
-
-    stages {
-        stage('Checkout') {
-            steps {
-                // Checkout the latest code from the repository
-                git 'https://github.com/vasanth-86/multi-branch.git'
-            }
-        }
-
-        stage('Install Dependencies') {
-            steps {
-                script {
-                    def installStatus = ''  // Example of defining a variable with 'def'
-                    // Install dependencies like npm, maven, etc.
-                    // For example, if you're using npm for a Node.js project:
-                    installStatus = sh(script: 'npm install', returnStdout: true).trim()
-                    echo "Installation status: ${installStatus}"
-                }
-            }
-        }
-
-        stage('Run Tests') {
-            steps {
-                script {
-                    def testStatus = ''  // Example of defining a variable with 'def'
-                    // Run your tests here
-                    testStatus = sh(script: 'npm test', returnStdout: true).trim()
-
-                    // You can replace the above command with any test command (e.g., `pytest` for Python, `mvn test` for Java, etc.)
-                    echo "Test status: ${testStatus}"
-                }
-            }
-        }
-
-        stage('Deploy to Test Environment') {
-            steps {
-                script {
-                    def deployStatus = ''  // Example of defining a variable with 'def'
-                    // Deploy the application to your test environment
-                    // This is just a placeholder for the actual deployment process
-                    echo 'Deploying to test environment...'
-                    deployStatus = sh(script: './deploy.sh test', returnStdout: true).trim()  // Example of running deploy script and capturing output
-                    echo "Deployment status: ${deployStatus}"
-                }
-            }
-        }
-
-        stage('Verify Deployment') {
-            steps {
-                script {
-                    def verifyStatus = ''  // Example of defining a variable with 'def'
-                    // Verify that the application was successfully deployed to the test environment
-                    // Example: Call an API or run a health check
-                    echo 'Verifying deployment...'
-                    verifyStatus = sh(script: './verify_deployment.sh', returnStdout: true).trim()  // Example of verification step
-                    echo "Verification status: ${verifyStatus}"
-                }
-            }
-        }
-    }
-
-    post {
-        success {
-            // Run on success
-            echo 'Tests passed and deployment verified in the test environment.'
-        }
-
-        failure {
-            // Run on failure
-            echo 'Something went wrong. Please check the logs.'
-        }
-
-        always {
-            // Cleanup actions or notifications that should always run
-            echo 'Cleaning up after pipeline...'
-        }
-    }
+  }
 }
-
