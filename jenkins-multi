@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 pipeline {
     agent any  // This means it can run on any available agent
 
@@ -11,7 +10,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 // Checkout the latest code from the repository
-                git 'https://github.com/your-username/your-repository.git'
+                git 'https://github.com/vasanth-86/multi-branch.git'
             }
         }
 
@@ -80,6 +79,3 @@ pipeline {
 
 
 
-=======
-echo "vasanth"
->>>>>>> 64b70586945027d4ede546e2e93af4eec925dd06
