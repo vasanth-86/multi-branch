@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 pipeline {
     agent any  // This means it can run on any available agent
 
